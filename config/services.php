@@ -34,8 +34,8 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-    'hugging_face' => [
-        'token' => env('HF_TOKEN'),
+    'cohere' => [
+        'token' => env('COHERE_API_KEY'),
     ],
 
 

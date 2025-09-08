@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GenerateRequest;
 use App\Models\Conversation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -9,7 +10,7 @@ use Exception;
 
 class AIController extends Controller
 {
-    public function generate(Request $request)
+    public function generate(GenerateRequest $request)
     {
         try {
             $user = $request->user();

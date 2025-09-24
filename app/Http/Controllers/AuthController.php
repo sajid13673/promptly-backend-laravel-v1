@@ -6,6 +6,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -59,6 +60,15 @@ class AuthController extends Controller
                 'status' => false,
                 'message' => 'Something went wrong, Please try again later'
             ]);
+        }
+    }
+    public function logout(Request $request)
+    {
+        try {
+            $request->user()->currentAccessToken()->delete();
+            return response()->json(['message' => 'Logged out']);
+        } catch (Exception $e) {
+            return response()->json(['message', $e->getMessage()]);
         }
     }
 }

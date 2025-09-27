@@ -10,7 +10,7 @@ class ConversationController extends Controller
     public function index(Request $request)
     {
         try {
-            $conversations = $request->user()->conversations;
+            $conversations = $request->user()->conversations()->orderBy('created_at', 'desc')->get();
             return response()->json(['status' => true, 'data' => $conversations]);
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => $e->getMessage()]);

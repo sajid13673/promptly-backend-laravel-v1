@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\GenerateRequest;
 use App\Models\Conversation;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Exception;
 
@@ -53,6 +52,7 @@ class AIController extends Controller
                 ['role' => 'USER', 'message' => $message],
                 ['role' => 'CHATBOT', 'message' => $reply],
             ]);
+            $conversation->load('messages');
 
             return response()->json([
                 'status' => true,

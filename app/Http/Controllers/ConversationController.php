@@ -24,4 +24,13 @@ class ConversationController extends Controller
             return response()->json(['status' => false, 'message' => $e->getMessage()]);
         }
     }
+    public function destroy($id) {
+        try {
+            $conversation = Conversation::with('messages')->find($id);
+            $conversation->delete();
+            return response()->json(['status' => true, 'message' => 'conversation deleted succesfully']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => false, 'message' => $e->getMessage()]);
+        }
+    }
 }

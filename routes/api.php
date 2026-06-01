@@ -17,4 +17,5 @@ Route::group(["middleware" => ["auth:sanctum"]],function(){
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/conversations', [ConversationController::class, 'index']);
     Route::get('/conversations/{id}', [ConversationController::class, 'get']);
+    Route::delete('/conversations/{id}', [ConversationController::class, 'destroy']);
 });

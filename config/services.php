@@ -37,6 +37,11 @@ return [
     'cohere' => [
         'token' => env('COHERE_API_KEY'),
     ],
+    'groq' => [
+        'url' => env('GROQ_API_URL'),
+        'token' => env('GROQ_API_KEY'),
+        'model' => env('GROQ_API_MODEL'),
+    ]
 
 
 ];

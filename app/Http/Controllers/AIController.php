@@ -19,11 +19,18 @@ class AIController extends Controller
             $conversation = Conversation::find($request->conversation_id);
             if (!$conversation) {
                 $titleResponse = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . config('services.cohere.token'),
+                    'Authorization' => 'Bearer ' . config('services.groq.token'),
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json'
-                ])->post('https://api.cohere.com/v1/chat', [
-                    'message' => 'generate a short title for this message : ' . $message
+                ])->post(config('services.groq.url'), [
+                    'messages' => [
+                        [
+                            'role' => 'user',
+                            'content' => 'generate a short title for this message : ' . $message
+                        ]
+                    ],
+                    "reasoning_effort" => "low",
+                    "model" => config('services.groq.model')
                 ]);
 
                 if ($titleResponse->failed()) {
@@ -32,21 +39,26 @@ class AIController extends Controller
                         'error' => $titleResponse->json() ?? $titleResponse->body(),
                     ], $titleResponse->status());
                 }
-                $title = $titleResponse->json('text');
+                // $title = $titleResponse->json('text');
+                $title = $titleResponse->json('choices.0.message.content');
                 $conversation = $user->conversations()->create(["title" => $title]);
             }
-
-            $history = Message::where('conversation_id', $conversation->id)
+            $messages = Message::where('conversation_id', $conversation->id)
             ->orderBy('created_at', 'asc')
-            ->get(['role', 'message'])
+            ->get(['role', 'content'])
             ->toArray();
+            $messages[] = [
+                'role' => 'user',
+                'content' => $message,
+            ];
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . config('services.cohere.token'),
+                'Authorization' => 'Bearer ' . config('services.groq.token'),
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json'
-            ])->post('https://api.cohere.com/v1/chat', [
-                'message' => $message,
-                'chat_history' => $history
+            ])->post(config('services.groq.url'), [
+                'messages' => $messages,
+                "reasoning_effort" => "low",
+                "model" => config('services.groq.model')
             ]);
 
             if ($response->failed()) {
@@ -56,10 +68,11 @@ class AIController extends Controller
                 ], $response->status());
             }
 
-            $reply = $response->json('text');
+            $reply = $response->json('choices.0.message.content');
+            $role = $response->json('choices.0.message.role');
             $conversation->messages()->createMany([
-                ['role' => 'USER', 'message' => $message],
-                ['role' => 'CHATBOT', 'message' => $reply],
+                ['role' => 'user', 'content' => $message],
+                ['role' => $role, 'content' => $reply],
             ]);
             $conversation->load('messages');
 
@@ -67,7 +80,8 @@ class AIController extends Controller
                 'status' => true,
                 'message' => $message,
                 'reply' => $reply,
-                'conversation' => $conversation
+                'conversation' => $conversation,
+                'response' => $response->body()
             ]);
         } catch (Exception $e) {
             return response()->json([

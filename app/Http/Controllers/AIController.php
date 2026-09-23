@@ -6,7 +6,6 @@ use App\Http\Requests\GenerateRequest;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Services\Ai\GroqService;
-use Illuminate\Support\Facades\Http;
 use Exception;
 use Illuminate\Http\JsonResponse;
 
@@ -25,20 +24,6 @@ class AIController extends Controller
                     'role' => 'user',
                     'content' => 'generate a short title for this message : ' . $message
                 ]]);
-                // $titleResponse = Http::withHeaders([
-                //     'Authorization' => 'Bearer ' . config('services.groq.token'),
-                //     'Content-Type' => 'application/json',
-                //     'Accept' => 'application/json'
-                // ])->post(config('services.groq.url'), [
-                //     'messages' => [
-                //         [
-                //             'role' => 'user',
-                //             'content' => 'generate a short title for this message : ' . $message
-                //         ]
-                //     ],
-                //     "reasoning_effort" => "low",
-                //     "model" => config('services.groq.model')
-                // ]);
 
                 if ($titleResponse->failed()) {
                     return response()->json([
@@ -58,15 +43,6 @@ class AIController extends Controller
                 'content' => $message,
             ];
             $response = $this->groqService->send($messages);
-            // $response = Http::withHeaders([
-            //     'Authorization' => 'Bearer ' . config('services.groq.token'),
-            //     'Content-Type' => 'application/json',
-            //     'Accept' => 'application/json'
-            // ])->post(config('services.groq.url'), [
-            //     'messages' => $messages,
-            //     "reasoning_effort" => "low",
-            //     "model" => config('services.groq.model')
-            // ]);
 
             if ($response->failed()) {
                 return response()->json([
@@ -88,7 +64,6 @@ class AIController extends Controller
                 'message' => $message,
                 'reply' => $reply,
                 'conversation' => $conversation,
-                'response' => $response->body() // To be removed
             ]);
         } catch (Exception $e) {
             return response()->json([

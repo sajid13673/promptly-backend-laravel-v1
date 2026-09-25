@@ -3,11 +3,8 @@
 use App\Http\Controllers\AIController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\PasswordResetController;
 use Illuminate\Support\Facades\Route;
-
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
 
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -19,3 +16,9 @@ Route::group(["middleware" => ["auth:sanctum"]],function(){
     Route::get('/conversations/{id}', [ConversationController::class, 'get']);
     Route::delete('/conversations/{id}', [ConversationController::class, 'destroy']);
 });
+
+Route::prefix('password')->group(function () {
+        Route::post('/send-code', [PasswordResetController::class, 'sendCode']);
+        Route::post('/verify-code', [PasswordResetController::class, 'verifyCode']);
+        Route::post('/reset', [PasswordResetController::class, 'reset']);
+    });

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -70,5 +72,27 @@ class AuthController extends Controller
         } catch (Exception $e) {
             return response()->json(['message', $e->getMessage()]);
         }
+    }
+     public function changePassword(PasswordChangeRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'Current password is incorrect',
+                'errors' => ['current_password' => ['Current password is incorrect']],
+            ], 422);
+        }
+
+        if (Hash::check($request->new_password, $user->password)) {
+            return response()->json([
+                'message' => 'New password must be different from current password',
+                'errors' => ['password' => ['New password must be different from current password']],
+            ], 422);
+        }
+
+        $user->update(['password' => Hash::make($request->new_password)]);
+
+        return response()->json(['message' => 'Password changed successfully']);
     }
 }

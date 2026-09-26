@@ -15,6 +15,7 @@ Route::group(["middleware" => ["auth:sanctum"]],function(){
     Route::get('/conversations', [ConversationController::class, 'index']);
     Route::get('/conversations/{id}', [ConversationController::class, 'get']);
     Route::delete('/conversations/{id}', [ConversationController::class, 'destroy']);
+    Route::post('/password/change', [AuthController::class, 'changePassword']);
 });
 
 Route::prefix('password')->group(function () {

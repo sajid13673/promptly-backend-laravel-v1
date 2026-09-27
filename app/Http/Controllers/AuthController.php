@@ -9,6 +9,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -24,19 +25,33 @@ class AuthController extends Controller
                 'password' => Hash::make($data['password']),
             ]);
 
-            $token = $user->createToken('auth_token')->plainTextToken;
+            // Mobile clients: issue a bearer token
+            if ($request->header('X-Client-Type') === 'mobile') {
+                $token = $user->createToken('auth_token')->plainTextToken;
 
-            return Response()->json([
+                return response()->json([
+                    'status' => true,
+                    'message' => 'User created successfully',
+                    'user' => $user,
+                    'token' => $token,
+                ]);
+            }
+
+            // Web clients: establish a session
+            Auth::login($user);
+            $request->session()->regenerate();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'User created successfully',
                 'user' => $user,
-                'token' => $token
             ]);
         } catch (Exception $e) {
-            return Response()->json([
+            Log::error('Register error: ' . $e->getMessage());
+            return response()->json([
                 'status' => false,
-                'message' => $e->getMessage()
-            ]);
+                'message' => 'Something went wrong, please try again later',
+            ], 500);
         }
     }
     public function login(LoginRequest $request)
@@ -46,32 +61,47 @@ class AuthController extends Controller
 
             $user = User::where('email', $data['email'])->first();
             if (! $user || ! Hash::check($data['password'], $user->password)) {
-                return response()->json(['satus' => false, 'message'  => "Invalid username or password"], 400);
+                return response()->json(['status' => false, 'message' => 'Invalid username or password'], 400);
             }
 
-            $token = $user->createToken('auth_token')->plainTextToken;
+            // Mobile clients: issue a bearer token
+            if ($request->header('X-Client-Type') === 'mobile') {
+                $token = $user->createToken('auth_token')->plainTextToken;
+
+                return response()->json([
+                    'status' => true,
+                    'user' => $user,
+                    'token' => $token,
+                ]);
+            }
+
+            // Web clients: establish a session (cookie-based, httpOnly, CSRF-protected)
+            Auth::login($user);
+            $request->session()->regenerate();
 
             return response()->json([
                 'status' => true,
                 'user' => $user,
-                'token' => $token
             ]);
         } catch (Exception $e) {
             Log::error('Login error: ' . $e->getMessage());
             return response()->json([
                 'status' => false,
-                'message' => 'Something went wrong, Please try again later'
-            ]);
+                'message' => 'Something went wrong, please try again later',
+            ], 500);
         }
     }
     public function logout(Request $request)
     {
-        try {
+        if ($request->header('X-Client-Type') === 'mobile') {
             $request->user()->currentAccessToken()->delete();
-            return response()->json(['message' => 'Logged out']);
-        } catch (Exception $e) {
-            return response()->json(['message', $e->getMessage()]);
+        } else {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
         }
+
+        return response()->json(['status' => true, 'message' => 'Logged out']);
     }
      public function changePassword(PasswordChangeRequest $request): JsonResponse
     {

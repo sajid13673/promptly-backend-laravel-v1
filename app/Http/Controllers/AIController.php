@@ -8,6 +8,7 @@ use App\Models\Message;
 use App\Services\Ai\GroqService;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class AIController extends Controller
 {
@@ -66,9 +67,10 @@ class AIController extends Controller
                 'conversation' => $conversation,
             ]);
         } catch (Exception $e) {
+            Log::error('Generate error: ' . $e->getMessage());
             return response()->json([
                 'status' => false,
-                'error' => $e->getMessage(),
+                'error' => 'Something went wrong, please try again',
             ], 500);
         }
     }

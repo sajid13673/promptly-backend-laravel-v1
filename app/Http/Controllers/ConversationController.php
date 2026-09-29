@@ -13,29 +13,34 @@ class ConversationController extends Controller
     {
         try {
             $conversations = $request->user()->conversations()->orderBy('created_at', 'desc')->get();
+
+            throw new \Exception("Error Processing Request");
+
             return response()->json(['status' => true, 'data' => $conversations]);
         } catch (\Exception $e) {
-            Log::error('Conversation index error : ', $e->getMessage());
-            return response()->json(['status' => false, 'message' => $this->errMessage]);
+            Log::error('Conversation index error : ' . $e->getMessage());
+            return response()->json(['status' => false, 'message' => $this->errMessage], 500);
         }
     }
-    public function get(int $id) {
+    public function get(int $id)
+    {
         try {
             $conversation = Conversation::with('messages')->find($id);
             return response()->json(['status' => true, 'data' => $conversation]);
         } catch (\Exception $e) {
-            Log::error('Conversation index error : ', $e->getMessage());
-            return response()->json(['status' => false, 'message' => $this->errMessage]);
+            Log::error('Conversation index error : ' . $e->getMessage());
+            return response()->json(['status' => false, 'message' => $this->errMessage], 500);
         }
     }
-    public function destroy(int $id) {
+    public function destroy(int $id)
+    {
         try {
             $conversation = Conversation::with('messages')->find($id);
             $conversation->delete();
             return response()->json(['status' => true, 'message' => 'conversation deleted succesfully']);
         } catch (\Exception $e) {
-            Log::error('Conversation index error : ', $e->getMessage());
-            return response()->json(['status' => false, 'message' => $this->errMessage]);
+            Log::error('Conversation index error : ' . $e->getMessage());
+            return response()->json(['status' => false, 'message' => $this->errMessage], 500);
         }
     }
 }

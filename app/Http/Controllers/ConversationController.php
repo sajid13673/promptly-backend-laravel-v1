@@ -13,9 +13,6 @@ class ConversationController extends Controller
     {
         try {
             $conversations = $request->user()->conversations()->orderBy('created_at', 'desc')->get();
-
-            throw new \Exception("Error Processing Request");
-
             return response()->json(['status' => true, 'data' => $conversations]);
         } catch (\Exception $e) {
             Log::error('Conversation index error : ' . $e->getMessage());

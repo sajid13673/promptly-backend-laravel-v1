@@ -7,20 +7,18 @@ use App\Http\Controllers\PasswordResetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('web')->group(function () {
-    Route::post('/register', [AuthController::class, 'register'])->name('register');
-    Route::post('/login', [AuthController::class, 'login'])->name('login');
-    Route::post('/generate', [AIController::class, 'generate'])->name('generate')->middleware('auth:sanctum');
+Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/generate', [AIController::class, 'generate'])->name('generate')->middleware('auth:sanctum');
 
-    Route::group(["middleware" => ["auth:sanctum"]], function () {
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::get('/conversations', [ConversationController::class, 'index']);
-        Route::get('/conversations/{id}', [ConversationController::class, 'get']);
-        Route::delete('/conversations/{id}', [ConversationController::class, 'destroy']);
-        Route::post('/password/change', [AuthController::class, 'changePassword']);
-        Route::get('/user', function (Request $request) {
-            return response()->json(['user' => $request->user()]);
-        });
+Route::group(["middleware" => ["auth:sanctum"]], function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/conversations', [ConversationController::class, 'index']);
+    Route::get('/conversations/{id}', [ConversationController::class, 'get']);
+    Route::delete('/conversations/{id}', [ConversationController::class, 'destroy']);
+    Route::post('/password/change', [AuthController::class, 'changePassword']);
+    Route::get('/user', function (Request $request) {
+        return response()->json(['user' => $request->user()]);
     });
 });
 
